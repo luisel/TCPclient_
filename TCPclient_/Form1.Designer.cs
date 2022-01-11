@@ -255,7 +255,7 @@ namespace TCPclient_
             this.connect_button.TabIndex = 0;
             this.connect_button.Text = "Connect";
             this.connect_button.UseVisualStyleBackColor = true;
-            this.connect_button.Click += new System.EventHandler(this.connect_button_Click);
+            this.connect_button.Click += new System.EventHandler(this.Connect_button_Click);
             // 
             // client_label
             // 

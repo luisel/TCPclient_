@@ -274,7 +274,7 @@
             this.stop_Server.TabIndex = 3;
             this.stop_Server.Text = "Stop Server";
             this.stop_Server.UseVisualStyleBackColor = true;
-            this.stop_Server.Click += new System.EventHandler(this.stop_Server_Click);
+            this.stop_Server.Click += new System.EventHandler(this.Stop_Server_Click);
             // 
             // message
             // 
@@ -292,7 +292,7 @@
             this.start_server.TabIndex = 5;
             this.start_server.Text = "Start Server";
             this.start_server.UseVisualStyleBackColor = true;
-            this.start_server.Click += new System.EventHandler(this.start_server_Click);
+            this.start_server.Click += new System.EventHandler(this.Start_server_Click);
             // 
             // Form2
             // 

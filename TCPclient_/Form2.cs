@@ -34,11 +34,11 @@ namespace TCPclient_
             stop_Server.Enabled = false;
         }
 
-        private void start_server_Click(object sender, EventArgs e)
+        private void Start_server_Click(object sender, EventArgs e)
         {
             try
             {
-                _accept = true;
+                //_accept = true;
                 _server = new TcpListener(IPAddress.Parse(IP_address.Text), Convert.ToInt32(port.Text));
                 _server.Start();
                 _thread = new Thread(AcceptClientSystem);
@@ -62,61 +62,46 @@ namespace TCPclient_
         {
             int count = 0;
             List<int> vs = new List<int>();
-            while (_accept)
+            _client = _server.AcceptTcpClient();
+            _netstream = _client.GetStream();
+            byte[] coord_bytes = new byte[_client.ReceiveBufferSize];
+            if (_client.Connected)
             {
 
-                _client = _server.AcceptTcpClient();
-                _netstream = _client.GetStream();
+                try
+                {
+                    int i;
+                    while ((i = _netstream.Read(coord_bytes, 0, coord_bytes.Length)) != 0)
+                    {
+                        string coord_msg = Encoding.ASCII.GetString(coord_bytes);
+                        message.Text = coord_msg;
+                        byte[] distance_bytes = Encoding.ASCII.GetBytes(coord_msg);
+                        _netstream.Write(distance_bytes, 0, distance_bytes.Length);
+                    }
 
 
-                //receieve the messages
-                /*byte[] bytes = new byte[_client.ReceiveBufferSize];
-                _netstream.Read(bytes, 0, bytes.Length);
-                string msg = Encoding.ASCII.GetString(bytes);
-                message.Text = msg;*/
-                
-                
-               
-                    
-                        
-                byte[] coord_bytes = new byte[_client.ReceiveBufferSize];
-                _netstream.Read(coord_bytes, 0, coord_bytes.Length);
-                string coord_msg = Encoding.ASCII.GetString(coord_bytes);
-                int.TryParse(coord_msg, out int result);
-                MessageBox.Show("Inside the _accept and this is the msg: ", coord_msg);
-
-                //Showing there is a result to work with
-                MessageBox.Show(result.ToString());
-
+                }
+                catch (System.IO.IOException ex)
+                {
+                    MessageBox.Show(ex.Message, ex.StackTrace);
+                }
+            }
                 //Add result into list and update counter
-                vs.Append(result);
+                //vs.Append(result);
                 //count++;
 
-                        
-                       
-                    
-                    
-
-                
-               
-                double distance = calculate_distance(vs);
+                /*double distance = calculate_distance(vs);
                 string dist_msg = distance.ToString();
                 byte[] distance_bytes = Encoding.ASCII.GetBytes(dist_msg);
                 _netstream.Write(distance_bytes, 0, distance_bytes.Length);
                     
-
                 vs.Clear();
-                
+                */
                 //count = 0;
-                
-                
-                
-                
-            }
-
+         
         }
 
-        private double calculate_distance(List<int> vs)
+        private double Calculate_distance(List<int> vs)
         {
             try
             {
@@ -135,13 +120,13 @@ namespace TCPclient_
             return double.NaN;
         }
 
-        private void stop_Server_Click(object sender, EventArgs e)
+        private void Stop_Server_Click(object sender, EventArgs e)
         {
             try
             {
                 _thread.Abort();
                 _server.Stop();
-                _accept = false;
+                //_accept = false;
                 start_server.Enabled = true;
                 stop_Server.Enabled = false;
             }

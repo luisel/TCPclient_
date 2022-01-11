@@ -36,7 +36,7 @@ namespace TCPclient_
         }
 
 
-        private void connect_button_Click(object sender, EventArgs e)
+        private void Connect_button_Click(object sender, EventArgs e)
         {
             //Create a Tcpclient object.
             _client = new TcpClient();
@@ -56,6 +56,7 @@ namespace TCPclient_
                     _stream = _client.GetStream();
                     byte[] msg = Encoding.ASCII.GetBytes("Connected!");
                     _stream.Write(msg, 0, msg.Length);
+                    _stream.Flush();
 
 
                     //If connection is successful then turn off the Connect button and turn on the Send button and Disconnect button.
@@ -94,17 +95,15 @@ namespace TCPclient_
         }
         private void Send_button_Click(object sender, EventArgs e)
         {
-            try
-            {
-                _client = new TcpClient();
-                _client.Connect(IPAddress.Parse(IP_address), port);
+            
 
                 if (_client.Connected)
                 {
+                    MessageBox.Show("Inside Send client connected");
                     _stream = _client.GetStream();
 
-                    byte[] msg0 = Encoding.ASCII.GetBytes("send");
-                    _stream.Write(msg0, 0, msg0.Length);
+                    //byte[] msg0 = Encoding.ASCII.GetBytes("send");
+                    //_stream.Write(msg0, 0, msg0.Length);
 
                     byte[] msg = Encoding.ASCII.GetBytes(x1.Text);
                     _stream.Write(msg, 0, msg.Length);
@@ -124,23 +123,18 @@ namespace TCPclient_
                     byte[] msg5 = Encoding.ASCII.GetBytes(z2.Text);
                     _stream.Write(msg5, 0, msg5.Length);
 
-
+                    
                     byte[] responsedata = new byte[256];
                     string response = string.Empty;
 
                     int bytes = _stream.Read(responsedata, 0, responsedata.Length);
                     response = Encoding.ASCII.GetString(responsedata, 0, bytes);
                     distance_result.Text = response;
+                  
 
-                    _stream.Close();
-                    _client.Close();
+              
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, ex.StackTrace);
-            }
-            
+           
         }
 
 
