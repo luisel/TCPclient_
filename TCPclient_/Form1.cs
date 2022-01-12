@@ -16,18 +16,19 @@ namespace TCPclient_
 {
     
     public partial class Form1 : Form
-    {
-        //Form2 form_2 = new Form2();
+    {        
         private TcpClient _client;
         private NetworkStream _stream;
+        private Thread _thread;
         IPHostEntry _host = Dns.GetHostEntry(Dns.GetHostName());
         string IP_address;
         int port = 11000;
 
+        bool listen = false;
+
         public Form1()
         {
             InitializeComponent();
-            CheckForIllegalCrossThreadCalls = false;
             IP_address = _host.AddressList[1].ToString();
             send_button.Enabled = false;
             disconnect_button.Enabled = false;
@@ -56,10 +57,12 @@ namespace TCPclient_
                     _stream = _client.GetStream();
                     byte[] msg = Encoding.ASCII.GetBytes("Connected!");
                     _stream.Write(msg, 0, msg.Length);
-                    _stream.Flush();
+                    //_stream.Flush();
 
+                    
 
-                    //If connection is successful then turn off the Connect button and turn on the Send button and Disconnect button.
+                    // If connection is successful then turn off the Connect button
+                    // and turn on the Send button and Disconnect button.
                     connect_button.Enabled = false;
                     send_button.Enabled = true;
                     disconnect_button.Enabled = true;
@@ -74,12 +77,14 @@ namespace TCPclient_
 
         }
 
+        
         private void Disconnect_button_Click(object sender, EventArgs e)
         {           
             
             try
-            {
+            {   
                 _stream.Close();
+                _thread.Abort();
                 _client.Close();
 
                 serverIP_address.Text = null;
@@ -95,48 +100,51 @@ namespace TCPclient_
         }
         private void Send_button_Click(object sender, EventArgs e)
         {
-            
 
-                if (_client.Connected)
-                {
-                    MessageBox.Show("Inside Send client connected");
-                    _stream = _client.GetStream();
+            if (_client.Connected)
+            {
+                MessageBox.Show("Inside Send client connected");
+                _stream = _client.GetStream();
+                
+                byte[] msg0 = Encoding.ASCII.GetBytes("buffer");
+                _stream.Write(msg0, 0, msg0.Length);
 
-                    //byte[] msg0 = Encoding.ASCII.GetBytes("send");
-                    //_stream.Write(msg0, 0, msg0.Length);
+                byte[] msg = Encoding.ASCII.GetBytes(x1.Text);
+                _stream.Write(msg, 0, msg.Length);
 
-                    byte[] msg = Encoding.ASCII.GetBytes(x1.Text);
-                    _stream.Write(msg, 0, msg.Length);
+                byte[] msg1 = Encoding.ASCII.GetBytes(y1.Text);
+                _stream.Write(msg1, 0, msg1.Length);
 
-                    byte[] msg1 = Encoding.ASCII.GetBytes(y1.Text);
-                    _stream.Write(msg1, 0, msg1.Length);
+                byte[] msg2 = Encoding.ASCII.GetBytes(z1.Text);
+                _stream.Write(msg2, 0, msg2.Length);
 
-                    byte[] msg2 = Encoding.ASCII.GetBytes(z1.Text);
-                    _stream.Write(msg2, 0, msg2.Length);
+                byte[] msg3 = Encoding.ASCII.GetBytes(x2.Text);
+                _stream.Write(msg3, 0, msg3.Length);
 
-                    byte[] msg3 = Encoding.ASCII.GetBytes(x2.Text);
-                    _stream.Write(msg3, 0, msg3.Length);
+                byte[] msg4 = Encoding.ASCII.GetBytes(y2.Text);
+                _stream.Write(msg4, 0, msg4.Length);
 
-                    byte[] msg4 = Encoding.ASCII.GetBytes(y2.Text);
-                    _stream.Write(msg4, 0, msg4.Length);
+                byte[] msg5 = Encoding.ASCII.GetBytes(z2.Text);
+                _stream.Write(msg5, 0, msg5.Length);
 
-                    byte[] msg5 = Encoding.ASCII.GetBytes(z2.Text);
-                    _stream.Write(msg5, 0, msg5.Length);
 
-                    
-                    byte[] responsedata = new byte[256];
-                    string response = string.Empty;
+                listen = true;
+                _thread = new Thread(listening);
+                _thread.Start();
 
-                    int bytes = _stream.Read(responsedata, 0, responsedata.Length);
-                    response = Encoding.ASCII.GetString(responsedata, 0, bytes);
-                    distance_result.Text = response;
-                  
-
-              
-                }
+            }
            
         }
-
+        private void listening()
+        {
+            while (listen)
+            {
+                byte[] msg = new byte[_client.ReceiveBufferSize];
+                _stream.Read(msg, 0, msg.Length);
+                string listener = Encoding.ASCII.GetString(msg);
+                distance_result.Text = listener;
+            }
+        }
 
 
         private void Client_label_Click(object sender, EventArgs e) { }

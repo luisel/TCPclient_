@@ -26,11 +26,13 @@ namespace TCPclient_
         public Form2()
         {
             InitializeComponent();
-           
+           // Get local server details.
             IPHostEntry _host = Dns.GetHostEntry(Dns.GetHostName());
             IP_address.Text = _host.AddressList[1].ToString();
             host_name.Text = _host.HostName.ToString();
             port.Text = "11000";
+
+            //Stop button should be off initially.
             stop_Server.Enabled = false;
         }
 
@@ -38,7 +40,8 @@ namespace TCPclient_
         {
             try
             {
-                //_accept = true;
+                
+                CheckForIllegalCrossThreadCalls = false;
                 _server = new TcpListener(IPAddress.Parse(IP_address.Text), Convert.ToInt32(port.Text));
                 _server.Start();
                 _thread = new Thread(AcceptClientSystem);
@@ -62,29 +65,32 @@ namespace TCPclient_
         {
             int count = 0;
             List<int> vs = new List<int>();
+
+
             _client = _server.AcceptTcpClient();
             _netstream = _client.GetStream();
-            byte[] coord_bytes = new byte[_client.ReceiveBufferSize];
-            if (_client.Connected)
-            {
 
+            // Continue to read messages while Client is connected
+            while (_client.Connected)
+            {
                 try
                 {
-                    int i;
-                    while ((i = _netstream.Read(coord_bytes, 0, coord_bytes.Length)) != 0)
-                    {
-                        string coord_msg = Encoding.ASCII.GetString(coord_bytes);
-                        message.Text = coord_msg;
-                        byte[] distance_bytes = Encoding.ASCII.GetBytes(coord_msg);
-                        _netstream.Write(distance_bytes, 0, distance_bytes.Length);
-                    }
+                    
+                    byte[] coord_bytes = new byte[_client.ReceiveBufferSize];
+                    _netstream.Read(coord_bytes, 0, coord_bytes.Length);
+                    string coord_msg = Encoding.ASCII.GetString(coord_bytes);
+                    message.Text = coord_msg;
 
 
+                    byte[] distance_bytes = Encoding.ASCII.GetBytes(coord_msg);
+                    _netstream.Write(distance_bytes, 0, distance_bytes.Length);
                 }
                 catch (System.IO.IOException ex)
                 {
                     MessageBox.Show(ex.Message, ex.StackTrace);
                 }
+               
+                
             }
                 //Add result into list and update counter
                 //vs.Append(result);
@@ -125,8 +131,9 @@ namespace TCPclient_
             try
             {
                 _thread.Abort();
+                _client.Close();
                 _server.Stop();
-                //_accept = false;
+                
                 start_server.Enabled = true;
                 stop_Server.Enabled = false;
             }
