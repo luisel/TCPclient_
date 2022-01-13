@@ -22,9 +22,7 @@ namespace TCPclient_
         private Thread _thread;
         IPHostEntry _host = Dns.GetHostEntry(Dns.GetHostName());
         string IP_address;
-        int port = 11000;
-
-        bool listen = false;
+        int port = 11000;        
 
         public Form1()
         {
@@ -36,7 +34,6 @@ namespace TCPclient_
 
         }
 
-
         private void Connect_button_Click(object sender, EventArgs e)
         {
             //Create a Tcpclient object.
@@ -47,37 +44,28 @@ namespace TCPclient_
             {
                 _client.Connect(IP_address, port);
 
-
-
                 if (_client.Connected)
                 {
+                    // If connection is successful then turn off the Connect button
+                    // and turn on the Send button and Disconnect button.
+                    connect_button.Enabled = false;                   
+                    disconnect_button.Enabled = true;
+                    send_button.Enabled = true;
+
                     //IP address of the server that we are trying to connect will be displayed.
                     serverIP_address.Text = IP_address;
 
-                    _stream = _client.GetStream();
-                    byte[] msg = Encoding.ASCII.GetBytes("Connected!");
-                    _stream.Write(msg, 0, msg.Length);
-                    //_stream.Flush();
-
-                    
-
-                    // If connection is successful then turn off the Connect button
-                    // and turn on the Send button and Disconnect button.
-                    connect_button.Enabled = false;
-                    send_button.Enabled = true;
-                    disconnect_button.Enabled = true;
-
+                    _stream = _client.GetStream();                   
+                    _thread = new Thread(Listening);
+                    _thread.Start();
                 }
             }
             catch (SocketException ex)
             {
                 MessageBox.Show(ex.Message, ex.StackTrace);
-            }
-                        
-
+            }                       
         }
-
-        
+       
         private void Disconnect_button_Click(object sender, EventArgs e)
         {           
             
@@ -100,49 +88,46 @@ namespace TCPclient_
         }
         private void Send_button_Click(object sender, EventArgs e)
         {
+            List<string> list = new List<string>();
+            list.Add(x1.Text);
+            list.Add(y1.Text);
+            list.Add(z1.Text);
+            list.Add(x2.Text);
+            list.Add(y2.Text);
+            list.Add(z2.Text);
 
             if (_client.Connected)
-            {
-                MessageBox.Show("Inside Send client connected");
+            {                
                 _stream = _client.GetStream();
-                
-                byte[] msg0 = Encoding.ASCII.GetBytes("buffer");
+                send_button.Enabled = true; byte[] msg0 = Encoding.ASCII.GetBytes("buff");
                 _stream.Write(msg0, 0, msg0.Length);
-
-                byte[] msg = Encoding.ASCII.GetBytes(x1.Text);
-                _stream.Write(msg, 0, msg.Length);
-
-                byte[] msg1 = Encoding.ASCII.GetBytes(y1.Text);
-                _stream.Write(msg1, 0, msg1.Length);
-
-                byte[] msg2 = Encoding.ASCII.GetBytes(z1.Text);
-                _stream.Write(msg2, 0, msg2.Length);
-
-                byte[] msg3 = Encoding.ASCII.GetBytes(x2.Text);
-                _stream.Write(msg3, 0, msg3.Length);
-
-                byte[] msg4 = Encoding.ASCII.GetBytes(y2.Text);
-                _stream.Write(msg4, 0, msg4.Length);
-
-                byte[] msg5 = Encoding.ASCII.GetBytes(z2.Text);
-                _stream.Write(msg5, 0, msg5.Length);
-
-
-                listen = true;
-                _thread = new Thread(listening);
-                _thread.Start();
-
+                for (int i = 0; i < list.Count; i++)
+                {
+                    byte[] msg = Encoding.ASCII.GetBytes(list[i]);
+                    _stream.Write(msg, 0, msg.Length);
+                    
+                    byte[] msg_parse = Encoding.ASCII.GetBytes("/");
+                    _stream.Write(msg_parse, 0, msg_parse.Length);
+                    
+                }
             }
            
         }
-        private void listening()
+        private void Listening()
         {
-            while (listen)
+            while (_client.Connected)
             {
-                byte[] msg = new byte[_client.ReceiveBufferSize];
-                _stream.Read(msg, 0, msg.Length);
-                string listener = Encoding.ASCII.GetString(msg);
-                distance_result.Text = listener;
+                try
+                {
+                    byte[] msg = new byte[_client.ReceiveBufferSize];
+                    _stream.Read(msg, 0, msg.Length);
+                    string listener = Encoding.ASCII.GetString(msg);
+                    distance_result.Text = listener;
+                }
+                catch (System.IO.IOException ex)
+                {
+                    MessageBox.Show(ex.Message, ex.StackTrace);
+                }                
             }
         }
 

@@ -18,14 +18,14 @@ namespace TCPclient_
         private TcpClient _client;
         private NetworkStream _netstream;
         private Thread _thread;
-        bool _accept = false;
-        Form1 form1 = new Form1();
+        readonly Form1 form1 = new Form1();
         
 
 
         public Form2()
         {
             InitializeComponent();
+
            // Get local server details.
             IPHostEntry _host = Dns.GetHostEntry(Dns.GetHostName());
             IP_address.Text = _host.AddressList[1].ToString();
@@ -64,7 +64,7 @@ namespace TCPclient_
         private void AcceptClientSystem()
         {
             int count = 0;
-            List<int> vs = new List<int>();
+            List<int> coord_list = new List<int>();
 
 
             _client = _server.AcceptTcpClient();
@@ -76,49 +76,49 @@ namespace TCPclient_
                 try
                 {
                     
-                    byte[] coord_bytes = new byte[_client.ReceiveBufferSize];
+                    byte[] coord_bytes = new byte[64];
                     _netstream.Read(coord_bytes, 0, coord_bytes.Length);
                     string coord_msg = Encoding.ASCII.GetString(coord_bytes);
                     message.Text = coord_msg;
 
+                    //coord_msg >= 12
+                    if (coord_msg.Substring(0,4) != "buff")
+                    {
+                        string[] coordinates = coord_msg.Split('/');
+                        //MessageBox.Show(coordinates[0], coordinates[1]);
+                        double distance = Calculate_distance(coordinates);
+                        string distance_string = distance.ToString();
+                        byte[] distance_bytes = Encoding.ASCII.GetBytes(distance_string);
+                        _netstream.Write(distance_bytes, 0, distance_bytes.Length);
+                        _netstream.Flush();
+                    }                    
+                    
 
-                    byte[] distance_bytes = Encoding.ASCII.GetBytes(coord_msg);
-                    _netstream.Write(distance_bytes, 0, distance_bytes.Length);
                 }
                 catch (System.IO.IOException ex)
                 {
                     MessageBox.Show(ex.Message, ex.StackTrace);
                 }
-               
                 
-            }
-                //Add result into list and update counter
-                //vs.Append(result);
-                //count++;
+                
 
-                /*double distance = calculate_distance(vs);
-                string dist_msg = distance.ToString();
-                byte[] distance_bytes = Encoding.ASCII.GetBytes(dist_msg);
-                _netstream.Write(distance_bytes, 0, distance_bytes.Length);
-                    
-                vs.Clear();
-                */
-                //count = 0;
+
+            }
          
         }
 
-        private double Calculate_distance(List<int> vs)
+        private double Calculate_distance(string[] vs)
         {
             try
             {
                 double distance = 0;
-                double deltaX = vs[3] - vs[0];
-                double deltaY = vs[4] - vs[1];
-                double deltaZ = vs[5] - vs[2];
+                double deltaX = Convert.ToInt32(vs[3]) - Convert.ToInt32(vs[0]);
+                double deltaY = Convert.ToInt32(vs[4]) - Convert.ToInt32(vs[1]);
+                double deltaZ = Convert.ToInt32(vs[5]) - Convert.ToInt32(vs[2]);
                 distance = (double)Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-                return distance;
+                return Math.Round(distance, 4);
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (System.IndexOutOfRangeException ex)
             {
                 MessageBox.Show(ex.Message, ex.StackTrace);
             }
@@ -130,12 +130,14 @@ namespace TCPclient_
         {
             try
             {
-                _thread.Abort();
-                _client.Close();
-                _server.Stop();
                 
-                start_server.Enabled = true;
-                stop_Server.Enabled = false;
+                    _thread.Abort();
+                    _client.Close();
+                    _server.Stop();
+                    start_server.Enabled = true;
+                    stop_Server.Enabled = false;
+                
+                
             }
             catch (Exception ex)
             {
