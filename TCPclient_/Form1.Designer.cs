@@ -278,7 +278,7 @@ namespace TCPclient_
             this.Location = new System.Drawing.Point(0, 200);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Form1";
+            this.Text = "Client";
             this.coordinates_groupBox.ResumeLayout(false);
             this.coordinates_groupBox.PerformLayout();
             this.server_groupBox.ResumeLayout(false);

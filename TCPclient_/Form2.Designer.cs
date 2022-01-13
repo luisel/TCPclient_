@@ -50,8 +50,10 @@
             this.host_name_label = new System.Windows.Forms.Label();
             this.IP_address_label = new System.Windows.Forms.Label();
             this.stop_Server = new System.Windows.Forms.Button();
-            this.message = new System.Windows.Forms.Label();
+            this.coordinates_received = new System.Windows.Forms.Label();
             this.start_server = new System.Windows.Forms.Button();
+            this.Coordinates_received_label = new System.Windows.Forms.Label();
+            this.Create_client_button = new System.Windows.Forms.Button();
             this.client_group_box.SuspendLayout();
             this.server_system_details_box.SuspendLayout();
             this.SuspendLayout();
@@ -68,6 +70,7 @@
             // client_group_box
             // 
             this.client_group_box.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.client_group_box.Controls.Add(this.Create_client_button);
             this.client_group_box.Controls.Add(this.client_IP_6);
             this.client_group_box.Controls.Add(this.client_label_6);
             this.client_group_box.Controls.Add(this.client_IP_5);
@@ -276,13 +279,13 @@
             this.stop_Server.UseVisualStyleBackColor = true;
             this.stop_Server.Click += new System.EventHandler(this.Stop_Server_Click);
             // 
-            // message
+            // coordinates_received
             // 
-            this.message.AutoSize = true;
-            this.message.Location = new System.Drawing.Point(389, 107);
-            this.message.Name = "message";
-            this.message.Size = new System.Drawing.Size(0, 13);
-            this.message.TabIndex = 4;
+            this.coordinates_received.AutoSize = true;
+            this.coordinates_received.Location = new System.Drawing.Point(389, 107);
+            this.coordinates_received.Name = "coordinates_received";
+            this.coordinates_received.Size = new System.Drawing.Size(0, 13);
+            this.coordinates_received.TabIndex = 4;
             // 
             // start_server
             // 
@@ -294,13 +297,34 @@
             this.start_server.UseVisualStyleBackColor = true;
             this.start_server.Click += new System.EventHandler(this.Start_server_Click);
             // 
+            // Coordinates_received_label
+            // 
+            this.Coordinates_received_label.AutoSize = true;
+            this.Coordinates_received_label.Location = new System.Drawing.Point(380, 74);
+            this.Coordinates_received_label.Name = "Coordinates_received_label";
+            this.Coordinates_received_label.Size = new System.Drawing.Size(112, 13);
+            this.Coordinates_received_label.TabIndex = 6;
+            this.Coordinates_received_label.Text = "Coordinates Received";
+            this.Coordinates_received_label.Click += new System.EventHandler(this.Coordinates_received_label_Click);
+            // 
+            // Create_client_button
+            // 
+            this.Create_client_button.Location = new System.Drawing.Point(294, 10);
+            this.Create_client_button.Name = "Create_client_button";
+            this.Create_client_button.Size = new System.Drawing.Size(77, 30);
+            this.Create_client_button.TabIndex = 7;
+            this.Create_client_button.Text = "Create Client";
+            this.Create_client_button.UseVisualStyleBackColor = true;
+            this.Create_client_button.Click += new System.EventHandler(this.Create_client_button_Click);
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.Coordinates_received_label);
             this.Controls.Add(this.start_server);
-            this.Controls.Add(this.message);
+            this.Controls.Add(this.coordinates_received);
             this.Controls.Add(this.stop_Server);
             this.Controls.Add(this.server_system_details_box);
             this.Controls.Add(this.client_group_box);
@@ -308,7 +332,7 @@
             this.Location = new System.Drawing.Point(800, 200);
             this.Name = "Form2";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Form2";
+            this.Text = "Server";
             this.client_group_box.ResumeLayout(false);
             this.client_group_box.PerformLayout();
             this.server_system_details_box.ResumeLayout(false);
@@ -342,7 +366,9 @@
         private System.Windows.Forms.Label IP_address_label;
         public System.Windows.Forms.Label IP_address;
         private System.Windows.Forms.Button stop_Server;
-        public System.Windows.Forms.Label message;
+        public System.Windows.Forms.Label coordinates_received;
         private System.Windows.Forms.Button start_server;
+        private System.Windows.Forms.Label Coordinates_received_label;
+        private System.Windows.Forms.Button Create_client_button;
     }
 }

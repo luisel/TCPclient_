@@ -88,14 +88,16 @@ namespace TCPclient_
         }
         private void Send_button_Click(object sender, EventArgs e)
         {
-            List<string> list = new List<string>();
-            list.Add(x1.Text);
-            list.Add(y1.Text);
-            list.Add(z1.Text);
-            list.Add(x2.Text);
-            list.Add(y2.Text);
-            list.Add(z2.Text);
-
+            List<string> list = new List<string>
+            {
+                x1.Text,
+                y1.Text,
+                z1.Text,
+                x2.Text,
+                y2.Text,
+                z2.Text
+            };
+            //_stream = _client.GetStream();
             if (_client.Connected)
             {                
                 _stream = _client.GetStream();
@@ -106,12 +108,14 @@ namespace TCPclient_
                     byte[] msg = Encoding.ASCII.GetBytes(list[i]);
                     _stream.Write(msg, 0, msg.Length);
                     
-                    byte[] msg_parse = Encoding.ASCII.GetBytes("/");
+                    byte[] msg_parse = Encoding.ASCII.GetBytes(",");
                     _stream.Write(msg_parse, 0, msg_parse.Length);
-                    
+                    _stream.Flush();
                 }
+                
             }
-           
+            
+
         }
         private void Listening()
         {
