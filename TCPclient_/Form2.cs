@@ -19,7 +19,7 @@ namespace TCPclient_
         private NetworkStream _netstream;
         private Thread _thread;
         private Form1 form1 = new Form1();
-        int counter = 0;
+        
         List<Form1> form = new List<Form1>();
         List<Label> client_IP = new List<Label>();
         
@@ -53,10 +53,12 @@ namespace TCPclient_
         {
             try
             {
+                //create server and start listening.
                 CheckForIllegalCrossThreadCalls = false;
                 _server = new TcpListener(IPAddress.Parse(IP_address.Text), Convert.ToInt32(port.Text));
                 _server.Start();
                 
+                //buttons for start should be turned off and stop should be on
                 start_server.Enabled = false;
                 stop_Server.Enabled = true;                                      
             }
@@ -68,39 +70,24 @@ namespace TCPclient_
         }
         private void Create_client_button_Click(object sender, EventArgs e)
         {
-            
-
             try
-            {
-                
+            {   
+                //create 6 different clients and stop after reaching 6
                 if (form.Count() <=5)
                 {
-                    //TcpClient tcp_client = default(TcpClient);
-                    counter++;
                     form1 = new Form1();
                     _thread = new Thread(AcceptClientSystem);
                     _thread.Start();
+                    //show a new form everytime a new client is created.
                     form.Add(form1);
                     form1.Show();
+                    //Didn't know how to get unique IP addresses for clients so I used this as a place holder.
                     for (int i = 0; i < form.Count(); i++)
                     {
                         string IP = Convert.ToString(i + 1);
                         client_IP[i].Text = IP;
-                    }
-                    /*while (true)
-                    {
-                        _client = _server.AcceptTcpClient();
-                        Handle_client client = new Handle_client();
-                        client.Start_client(_client);
-                    }
-                    */
-                    
-                    
-                    
-                }
-                
-                
-                
+                    }                                                                             
+                }            
             }
             catch(Exception ex)
             {
@@ -110,7 +97,7 @@ namespace TCPclient_
         }
         private void AcceptClientSystem()
         {
-
+            //create client and get stream to write/read
             _client = _server.AcceptTcpClient();
             _netstream = _client.GetStream();
 
@@ -119,14 +106,16 @@ namespace TCPclient_
             {
                 try
                 {
-
+                    
                     byte[] coord_bytes = new byte[_client.ReceiveBufferSize];
                     _netstream.Read(coord_bytes, 0, coord_bytes.Length);
                     string coord_msg = Encoding.ASCII.GetString(coord_bytes);
                     string[] coord_msg_list = coord_msg.Split('\0');
+
+                    //this throws a looping error when I have a client disconnect from the server. Not sure how to fix it. Closing in wrong order?                       
                     coordinates_received.Text = coord_msg_list[0].Substring(0, coord_msg_list[0].Length - 1);
 
-                    //coord_msg >= 12
+                    //This is where I send the message from the client and parse it so that the method Calculate_distance can give me a result
                     if (coord_msg.Substring(0, 4) != "buff")
                     {
                         string[] coordinates = coord_msg.Split(',');
@@ -134,13 +123,19 @@ namespace TCPclient_
                         double distance = Calculate_distance(coordinates);
                         string distance_string = distance.ToString();
                         byte[] distance_bytes = Encoding.ASCII.GetBytes(distance_string);
+
+                        //I write the result back to the client
                         _netstream.Write(distance_bytes, 0, distance_bytes.Length);
                         _netstream.Flush();
-                    }
+                    }                                        
                 }
                 catch (System.IO.IOException ex)
                 {
                     MessageBox.Show(ex.Message, ex.StackTrace);
+                }
+                catch (System.ArgumentOutOfRangeException e)
+                {
+                    MessageBox.Show(e.Message, e.StackTrace);
                 }
             }
         }
@@ -148,6 +143,7 @@ namespace TCPclient_
         {
             try
             {
+                //I convert list of string into double before doing the calculations
                 double distance = 0;
                 double deltaX = Convert.ToDouble(vs[3]) - Convert.ToDouble(vs[0]);
                 double deltaY = Convert.ToDouble(vs[4]) - Convert.ToDouble(vs[1]);
@@ -166,9 +162,9 @@ namespace TCPclient_
         {
             try
             {
-                
-                    //_thread.Abort();
+                   //I must be doing this wrong. I keep getting error when I close the client.
                     _client.Close();
+                    _thread.Abort();
                     _server.Stop();
                     start_server.Enabled = true;
                     stop_Server.Enabled = false;
@@ -196,76 +192,6 @@ namespace TCPclient_
         private void IP_address_label_Click(object sender, EventArgs e) { }
         private void Host_name_label_Click(object sender, EventArgs e) { }
         private void Port_label_Click(object sender, EventArgs e) { }
-        private void Coordinates_received_label_Click(object sender, EventArgs e) { }
-
-        
-    }
-
-    public class Handle_client
-    {
-        TcpClient client_socket;
-
-        public void Start_client(TcpClient client_socket)
-        {
-            this.client_socket = client_socket;
-            
-            Thread client_thread = new Thread(doChat);
-            client_thread.Start();
-        }
-
-        private void doChat()
-        {
-            //string temp = null;
-            while (client_socket.Connected)
-            {
-                try
-                {
-                    
-                    NetworkStream networkStream = client_socket.GetStream();
-                    byte[] bytesFrom = new byte[client_socket.ReceiveBufferSize];
-                    networkStream.Read(bytesFrom, 0, (int)client_socket.ReceiveBufferSize);
-                    string dataFromClient = System.Text.Encoding.ASCII.GetString(bytesFrom);
-                    string[] coord_msg_list = dataFromClient.Split('\0');
-                    MessageBox.Show(coord_msg_list[0].Substring(0, coord_msg_list[0].Length - 1));
-
-                    if (coord_msg_list[0].Substring(0, 4) != "buff")
-                    {
-                        string[] coordinates = coord_msg_list[0].Split(',');
-
-                        double distance = Calculate_distance(coordinates);
-                        string distance_string = distance.ToString();
-                        byte[] distance_bytes = Encoding.ASCII.GetBytes(distance_string);
-                        networkStream.Write(distance_bytes, 0, distance_bytes.Length);
-                        networkStream.Flush();
-                    }
-
-                }
-                catch (System.InvalidOperationException ex)
-                {
-                    MessageBox.Show(ex.Message, ex.StackTrace);
-                }
-            }
-
-
-        }
-        
-        private double Calculate_distance(string[] vs)
-        {
-            try
-            {
-                double distance = 0;
-                double deltaX = Convert.ToDouble(vs[3]) - Convert.ToDouble(vs[0]);
-                double deltaY = Convert.ToDouble(vs[4]) - Convert.ToDouble(vs[1]);
-                double deltaZ = Convert.ToDouble(vs[5]) - Convert.ToDouble(vs[2]);
-                distance = (double)Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-                return Math.Round(distance, 4);
-            }
-            catch (System.IndexOutOfRangeException ex)
-            {
-                MessageBox.Show(ex.Message, ex.StackTrace);
-            }
-
-            return double.NaN;
-        }
-    }
+        private void Coordinates_received_label_Click(object sender, EventArgs e) { }        
+    }   
 }

@@ -55,6 +55,7 @@ namespace TCPclient_
                     //IP address of the server that we are trying to connect will be displayed.
                     serverIP_address.Text = IP_address;
 
+                    //Client will start listening to the server.
                     _stream = _client.GetStream();                   
                     _thread = new Thread(Listening);
                     _thread.Start();
@@ -70,11 +71,13 @@ namespace TCPclient_
         {           
             
             try
-            {   
+            {   //Must be doing something wrong. Everytime I disconnect it throws an exception. Dispose? Misplaced Close calls?
                 _stream.Close();
-                _thread.Abort();
                 _client.Close();
+                _thread.Abort();
+                
 
+                //turn on the connect button and turn off Send and disconnect. Set the IP_address label to null.
                 serverIP_address.Text = null;
                 send_button.Enabled = false;
                 connect_button.Enabled = true;
@@ -88,6 +91,7 @@ namespace TCPclient_
         }
         private void Send_button_Click(object sender, EventArgs e)
         {
+            //I put the text in a list so I can use a for loop instead of writing it all out.
             List<string> list = new List<string>
             {
                 x1.Text,
@@ -97,35 +101,39 @@ namespace TCPclient_
                 y2.Text,
                 z2.Text
             };
-            //_stream = _client.GetStream();
+            //This will write to the server the coordinates entered in the coordinate text boxes.
             if (_client.Connected)
             {                
                 _stream = _client.GetStream();
+                //Wish I knew why I need this buffer (not doing something right).
                 send_button.Enabled = true; byte[] msg0 = Encoding.ASCII.GetBytes("buff");
                 _stream.Write(msg0, 0, msg0.Length);
                 for (int i = 0; i < list.Count; i++)
                 {
+                    //send coordinate
                     byte[] msg = Encoding.ASCII.GetBytes(list[i]);
                     _stream.Write(msg, 0, msg.Length);
                     
+                    //parse indicator to use when on server side
                     byte[] msg_parse = Encoding.ASCII.GetBytes(",");
                     _stream.Write(msg_parse, 0, msg_parse.Length);
                     _stream.Flush();
-                }
-                
-            }
-            
-
+                }               
+            }            
         }
         private void Listening()
         {
+            //client will continue to listen for the distance calculated by the server.
             while (_client.Connected)
             {
                 try
                 {
+                    //get message from server
                     byte[] msg = new byte[_client.ReceiveBufferSize];
                     _stream.Read(msg, 0, msg.Length);
                     string listener = Encoding.ASCII.GetString(msg);
+
+                    //display the results to the distance label.
                     distance_result.Text = listener;
                 }
                 catch (System.IO.IOException ex)
